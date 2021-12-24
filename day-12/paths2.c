@@ -177,7 +177,7 @@ int	check_path(t_node **path, int current, char	*next, t_node **nodes)
 	aux_2 = *path;
 	if (get_num_nodes(path) <= 1)
 		return (1);
-/*	while (aux)
+	while (aux)
 	{
 		aux_2 = aux->next;
 		while (aux_2)
@@ -187,11 +187,13 @@ int	check_path(t_node **path, int current, char	*next, t_node **nodes)
 			aux_2 = aux_2->next;
 		}
 		aux = aux->next;
-	}*/
+	}
 	aux = *path;
 	while (aux)
 	{
-		if (next[0] >= 'a' && strcmp(next, aux->name) == 0)
+		if (next[0] >= 'a' && strcmp(next, aux->name) == 0 && repeated == 0)
+			repeated = 1;
+		else if (next[0] >= 'a' && strcmp(next, aux->name) == 0 && repeated == 1)
 			return (0);
 		aux = aux->next;
 	}
