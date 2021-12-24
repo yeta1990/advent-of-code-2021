@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
+#include <unistd.h>
 
 typedef struct s_edge
 {
@@ -15,7 +16,7 @@ typedef struct s_node
 	struct s_node	*next;
 }	t_node;
 
-void	add_edge(t_edge **edge, char line[20]);
+void	add_edge(t_edge **edge, char line[30]);
 int		count_nodes(t_edge **edges);
 void	add_node(t_node **nodes, char node_name[10]);
 t_node **separate_nodes(t_edge **edges);
@@ -24,16 +25,18 @@ int		**create_matrix(t_node **nodes, t_edge **edges, int	n_nodes);
 int		get_node_position(t_node **nodes, char *name);
 int		get_num_nodes(t_node **nodes);
 void	find_paths(int **matrix, t_node **nodes, int num_nodes);
-void	continue_path(int **matrix, t_node **nodes, t_node **path, int num_nodes, int next_step, int *j);
+void	continue_path(int **matrix, t_node **nodes, t_node **path, int num_nodes, int next_step, int *j, int start_col);
 void	add_to_path(t_node **path, char *name);
-int		check_path(t_node **path, int current, char	*next);
+int		check_path(t_node **path, int current, char	*next, t_node **nodes);
 void	print_path(t_node **path);
+void	remove_last(t_node **path, int end);
+int		get_last_node_pos(t_node **path, t_node **nodes);
 
 int	main(void)
 {
 	FILE	*f;
 	t_edge	**edges;
-	char	line[20] = {0};
+	char	line[30] = {0};
 	t_edge	*aux;
 	t_node	**nodes;
 	int		**matrix;
@@ -41,14 +44,14 @@ int	main(void)
 
 	matrix = 0;
 	nodes = 0;
-	f = fopen("ex", "r");
+	f = fopen("input", "r");
 	edges = malloc(sizeof(t_edge *));
 	edges[0] = 0;
 	while (fscanf(f, "%20[^\n]\n", line) != -1)
 	{
 		printf("%s\n", line);
 		add_edge(edges, line);
-		bzero(line, 20);
+		bzero(line, 30);
 	}
 	printf("\n---------\n\n");
 	aux = *edges;
@@ -74,74 +77,147 @@ void	find_paths(int **matrix, t_node **nodes, int num_nodes)
 	add_to_path(path, "start");
 	while (i < num_nodes - 1)
 	{
-		if (matrix[i][0] == 1)
+		if (matrix[0][i] == 1)
 		{
 			add_to_path(path, get_node_name(nodes, i));
-		//	printf("%i: %s\n", i, get_node_name(nodes, i));
-			continue_path(matrix, nodes, path, num_nodes, i, &j);
+			printf("\n1. %i: %s\n", i, get_node_name(nodes, i));
+			write(1, "ey\n", 3);
+			continue_path(matrix, nodes, path, num_nodes, i, &j, 1);
 		}
 		i++;
 	}
 }
 
-void	continue_path(int **matrix, t_node **nodes, t_node **path, int num_nodes, int next_step, int *j)
+void	continue_path(int **matrix, t_node **nodes, t_node **path, int num_nodes, int next_step, int *j, int start_col)
 {
 	int	i;
+	int	final_next_pos;
+	int	some_coinc;
 
-	i = 1;
+	some_coinc = 0;
+	final_next_pos = 0;
+	i = start_col;
 	if (next_step == num_nodes - 1)
 	{
+		printf("\nfinal: ");
 		print_path(path);
+		remove_last(path, 1);
+		final_next_pos = get_last_node_pos(path, nodes);
+		remove_last(path, 1);
+//		print_path(path);
+	//	printf("go to: %i %i\n", get_last_node_pos(path, nodes), final_next_pos + 1);
+		continue_path(matrix, nodes, path, num_nodes, get_last_node_pos(path, nodes), j, final_next_pos + 1);
 		return ;
 	}
+	else if (next_step >= num_nodes)
+		exit(1);
 	(*j)++;
-	while (i < num_nodes)// && *j < 20)
+	while (i < num_nodes)  
 	{
+	//	printf("checking %i %i\n", next_step, i);
 		if (matrix[next_step][i] == 1)
 		{
-
-			printf("%i %i: %s\n", next_step, i, get_node_name(nodes, i));
-			if (check_path(path, next_step, get_node_name(nodes, i)))
+			some_coinc = 1;
+		//	printf("\n.%i %i: %s\n", next_step, i, get_node_name(nodes, i));
+			if (check_path(path, next_step, get_node_name(nodes, i), nodes))
 			{
 				add_to_path(path, get_node_name(nodes, i));
-				continue_path(matrix, nodes, path, num_nodes, i, j);
+			//	print_path(path);
+		//		printf("paso por aquí, voy a %i %i, next step era %i\n", i, 1, next_step);
+			//	printf("go to: %i %i\n", i, 1);
+				continue_path(matrix, nodes, path, num_nodes, i, j, 1);
 			}
+			else
+			{
+			//	print_path(path);
+			//	remove_last(path, 0);
+			//	printf("y por allá\n");
+			//	print_path(path);
+			//	printf("go to: %i %i\n", next_step, i + 1);
+				continue_path(matrix, nodes, path, num_nodes, next_step, j, i + 1);
+			}
+
 		}
 		i++;
 	}
+	if (some_coinc == 0)
+	{
+		if (next_step == 0)
+			exit(0);
+//		printf("-any coinc\n");
+//		print_path(path);
+		final_next_pos = get_last_node_pos(path, nodes);
+		if (final_next_pos == next_step)
+		{
+			remove_last(path, 1);
+			continue_path(matrix, nodes, path, num_nodes, get_last_node_pos(path, nodes), j, next_step + 1);
+		}
+		else
+		{
+//		print_path(path);
+		//	printf("go to: %i %i\n", get_last_node_pos(path, nodes), next_step + 1);
+			continue_path(matrix, nodes, path, num_nodes, get_last_node_pos(path, nodes), j, next_step + 1);
+		}
+	}
+
+/*	final_next_pos = get_last_node_pos(path, nodes);
+	remove_last(path, 1);
+	print_path(path);
+	printf("go to: %i %i\n", get_last_node_pos(path, nodes), final_next_pos + 1);
+*/
+
+
 }
 
-int	check_path(t_node **path, int current, char	*next)
+void	remove_last(t_node **path, int end)
 {
-	t_node	*prev_prev;
-//	t_node	*prev;
+	t_node *aux;
+	t_node *aux_1;
+
+	aux = *path;
+	if (!aux)
+		return ;
+	while (aux->next)
+	{
+		aux_1 = aux;
+		aux = aux->next;
+	}
+	if (aux->name[0] >= 97 && strcmp(aux->name, "end") != 0 && end == 0)
+	{
+	//	printf(". remove %s\n", aux->name); 
+		bzero(aux->name, strlen(aux->name));
+		free(aux_1->next);
+		aux_1->next = 0;
+	}
+	else if (end == 1)
+	{
+//		printf(". remove %s\n", aux->name); 
+		bzero(aux->name, strlen(aux->name));
+		free(aux_1->next);
+		aux_1->next = 0;
+	}
+
+}
+
+int	check_path(t_node **path, int current, char	*next, t_node **nodes)
+{
 	t_node	*aux;
 	int		i;
 
 	i = 0;
-	prev_prev = *path;
 	aux = *path;
+	if (get_num_nodes(path) <= 1)
+		return (1);
 	while (aux)
 	{
 		if (next[0] >= 'a' && strcmp(next, aux->name) == 0)
 			return (0);
 		aux = aux->next;
 	}
-	current += 0;
-	return (1);
-/*	while (i < get_num_nodes(path) - 3)
-	{
-		prev_prev = prev_prev->next;
-		i++;
-	}
-	prev = prev_prev->next;
-	aux = prev->next;
-	printf("%i: %s, %s. %s, %s\n", current, prev_prev->name, aux->name, prev->name, next);
-	if (strcmp(prev_prev->name, aux->name) == 0 && strcmp(prev->name, next) == 0)
-	{
-		printf("coinc\n");
+	if (get_node_name(nodes, get_last_node_pos(path, nodes))[0] >= 'a' && next[0] >= 'a' && strcmp(next, "end") != 0)
 		return (0);
-	}*/
+	current += 0;
+//	printf(" ok \n");
 	return (1);
 }
 
@@ -254,6 +330,17 @@ int	**create_matrix(t_node **nodes, t_edge **edges, int	n_nodes)
 	return (matrix);
 }
 
+int	get_last_node_pos(t_node **path, t_node **nodes)
+{
+	t_node	*aux;
+
+	aux = *path;
+	while (aux->next)
+		aux = aux->next;
+//	printf("give me %s\n", aux->name);
+	return (get_node_position(nodes, aux->name));
+}
+
 int	get_node_position(t_node **nodes, char *name)
 {
 	int		i;
@@ -261,7 +348,7 @@ int	get_node_position(t_node **nodes, char *name)
 
 	i = 0;
 	aux = *nodes;
-	while (aux)
+	while (aux && name)
 	{
 		if (strcmp(aux->name, name) == 0)
 			return (i);
@@ -368,7 +455,7 @@ void	add_node(t_node **nodes, char node_name[10])
 //	printf("added %s\n", new->name);
 }
 
-void	add_edge(t_edge **edge, char line[20])
+void	add_edge(t_edge **edge, char line[30])
 {
 	t_edge	*new;
 
