@@ -1,47 +1,43 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>
+#include <string.h>
 
-void	fill_blank(char map[1500][1500]);
-void	print_map(char map[1500][1500], int x, int y);
-void	fold(char (*map)[1500][1500], int point);
-void	fold_x(char (*map)[1500][1500], int point);
-int		count_dots(char map[1500][1500], int x, int y);
-int		get_max_x(char map[1500][1500]);
-int		get_max_y(char map[1500][1500]);
+void	fill_blank(char map[2000][2000]);
+void	print_map(char map[2000][2000], int x, int y);
+void	fold(char (*map)[2000][2000], int point);
+void	fold_x(char (*map)[2000][2000], int point);
+int		count_dots(char map[2000][2000], int x, int y);
+int		get_max_x(char map[2000][2000]);
+int		get_max_y(char map[2000][2000]);
 
 int	main(void)
 {
 	FILE	*f;
-	char	map[1500][1500];
+	char	map[2000][2000];
 	char	*line;
 	int		x;
 	int		maxx;
 	int		y;
 	int		maxy;
+	int		i;
 
+	i = 0;
 	maxx = 0;
 	maxy = 0;
 	x = 0;
 	y = 0;
-	line = calloc(500, sizeof(char));
-	f = fopen("ex", "r");
+	line = malloc(sizeof(char) * 50);
+	f = fopen("input", "r");
 	fill_blank(map);
-	while (fscanf(f, "%s\n", line) != -1)
+	while (fscanf(f, "%i,%i\n", &x, &y) != 0)// && i < 10)
 	{
-		if (strchr(line, ',') == 0)
-			break ;
-		x = atoi(line);
-		while (line && *line != ',')
-			line++;
-		line++;
-		y = atoi(line);
+		printf("x: %i, y: %i\n", x, y);
 		if (y > maxy)
 			maxy = y;
 		if (x > maxx)
 			maxx = x;
 		map[y][x] = '#';
-		bzero(line, 50);
+		i++;
 	}
 	printf("max_ x %i, y %i\n", maxx, maxy);
 	x = 0;
@@ -64,18 +60,20 @@ int	main(void)
 		{
 			line++;
 			line++;
+			printf("%i\n", atoi(line));
 			x = atoi(line);
 			fold_x(&map, atoi(line));
 			y = get_max_y(map) + 1;
 			break ;
 		}
 	}
+	printf("print x %i, y %i\n", x, y);
 //	print_map(map, x, y);
 	printf("\n%i dots\n", count_dots(map, x, y));
 	fclose(f);
 }
 
-int	get_max_x(char map[1500][1500])
+int	get_max_x(char map[2000][2000])
 {
 	int	i;
 	int	j;
@@ -84,12 +82,12 @@ int	get_max_x(char map[1500][1500])
 	i = 0;
 	j = 0;
 	max = 0;
-	while (i < 1500)
+	while (i < 2000)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
-			if (j > max && map[i][j] == '#')
+			if (j >= max && map[i][j] == '#')
 				max = j;
 			j++;
 		}
@@ -98,7 +96,7 @@ int	get_max_x(char map[1500][1500])
 	return (max);
 }
 
-int	get_max_y(char map[1500][1500])
+int	get_max_y(char map[2000][2000])
 {
 	int	i;
 	int	j;
@@ -107,12 +105,12 @@ int	get_max_y(char map[1500][1500])
 	i = 0;
 	j = 0;
 	max = 0;
-	while (i < 1500)
+	while (i < 2000)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
-			if (i > max && map[i][j] == '#')
+			if (i >= max && map[i][j] == '#')
 				max = i;
 			j++;
 		}
@@ -123,7 +121,7 @@ int	get_max_y(char map[1500][1500])
 }
 
 
-void	fold_x(char (*map)[1500][1500], int point)
+void	fold_x(char (*map)[2000][2000], int point)
 {
 	int	i;
 	int	j;
@@ -134,12 +132,12 @@ void	fold_x(char (*map)[1500][1500], int point)
 	j = 0;
 	copy = 1;
 	max = 0;
-	while (i < 1500)
+	while (i < 2000)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
-			if ((*map)[i][j] == '#')
+			if (i >= max && (*map)[i][j] == '#')
 				max = i;
 			j++;
 		}
@@ -148,13 +146,13 @@ void	fold_x(char (*map)[1500][1500], int point)
 
 
 	i = 0;
-	while (i < 1500)
+	while (i <= max)
 	{
 		j = point + 1;
 		copy = 1;
-		while (j <= max)
-		{
-//			printf("%i %i %i %i\n", i, point, copy, max);
+		while (j <= point * 2)
+ 		{
+			printf("%i %i %i %i\n", i, point, copy, max);
 			if ((*map)[i][j] == '#')
 				(*map)[i][point - copy] = (*map)[i][j];
 			j++;
@@ -165,7 +163,7 @@ void	fold_x(char (*map)[1500][1500], int point)
 //	print_map(*map);
 }
 
-int	count_dots(char map[1500][1500], int x, int y)
+int	count_dots(char map[2000][2000], int x, int y)
 {
 	int	i;
 	int	j;
@@ -188,7 +186,7 @@ int	count_dots(char map[1500][1500], int x, int y)
 	return (count);
 }
 
-void	fold(char (*map)[1500][1500], int point)
+void	fold(char (*map)[2000][2000], int point)
 {
 	int	i;
 	int	j;
@@ -199,10 +197,10 @@ void	fold(char (*map)[1500][1500], int point)
 	j = 0;
 	copy = 1;
 	max = 0;
-	while (i < 1500)
+	while (i < 2000)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
 			if ((*map)[i][j] == '#')
 				max = i;
@@ -210,12 +208,12 @@ void	fold(char (*map)[1500][1500], int point)
 		}
 		i++;
 	}
-	printf("max %i", max);
+//	printf("max %i", max);
 	i = point + 1;
 	while (i <= max)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
 		//	printf("%i %i %i %i\n", i, point, copy, max);
 			if ((*map)[i][j] == '#')
@@ -228,7 +226,7 @@ void	fold(char (*map)[1500][1500], int point)
 //	print_map(*map);
 }
 
-void	print_map(char map[1500][1500], int x, int y)
+void	print_map(char map[2000][2000], int x, int y)
 {
 	int	i;
 	int	j;
@@ -248,17 +246,17 @@ void	print_map(char map[1500][1500], int x, int y)
 	}
 }
 
-void	fill_blank(char map[1500][1500])
+void	fill_blank(char map[2000][2000])
 {
 	int	i;
 	int	j;
 
 	i = 0;
 	j = 0;
-	while (i < 1500)
+	while (i < 2000)
 	{
 		j = 0;
-		while (j < 1500)
+		while (j < 2000)
 		{
 			map[i][j] = '.';
 			j++;
