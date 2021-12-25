@@ -60,25 +60,21 @@ int	main(void)
 
 void	count_letters(t_letter **template)
 {
-	char		c;
-	t_letter	*aux;
-	long long	count;
+	t_letter			*aux;
+	unsigned long long	count[26] = {0};
+	int					i;
 
-	count = 0;
+	i = 0;
 	aux = *template;
-	c = 'A';
-	while (c <= 'Z')
+	while (aux)
 	{
-		count = 0;
-		aux = *template;
-		while (aux)
-		{
-			if (aux->c == c)
-				count++;
-			aux = aux->next;
-		}
-		printf("%c: %lld\n", c, count);
-		c++;
+		count[aux->c-65]++;
+		aux = aux->next;
+	}
+	while (i < 26)
+	{
+		printf("%c: %lli\n", i + 65, count[i]);
+		i++;
 	}
 }
 
