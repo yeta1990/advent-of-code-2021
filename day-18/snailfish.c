@@ -22,27 +22,135 @@ t_pair	*new_pair(void);
 t_pair	*parse_snailfish_num(char **str);
 void	print_pair(t_pair *p);
 t_pair	*sum_snailfish_num(t_pair *p1, t_pair *p2);
+int		deepest_pair(t_pair *p, int i, t_pair **deepest);
+void	explode(t_pair *p);
 
 int	main(void)
 {
 	t_pair	*p;
-//	t_pair	*p2;
-//	t_pair	*sum;
+	t_pair	*p2;
+	t_pair	*sum;
 
 //	char	*str = "[1,2]";
 //	char	*str = "[[1,2],3]";
 //	char	*str = "[2,[8,8]]";
 //	char	*str = "[8,[7,[1,0]]]";
-	char	*str = "[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]";
+//	char	*str = "[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]";
 //	char	*str = "[[[1,3],[5,3]],1]";
 //	char	*str = "[[1,3],[5,3]]";
 //	char	*str = "[7,[8,[7,[1,0]]]]";
 //	char	*str = "[[8,[7,[1,0]]],7]";
+//	char	*str = "[[[[4,3],4],4],[7,[[8,4],9]]]";
+//	char	*str = "[[[[[9,8],1],2],3],4]";
+//	char	*str = "[7,[6,[5,[4,[3,2]]]]]";
+//	char	*str = "[[6,[5,[4,[3,2]]]],1]";
+//	char	*str = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]";
+	char	*str = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]";
+	char	*str2 = "[1,1]";
 	p = parse_snailfish_num(&str);
-//	p2 = parse_snailfish_num(str2);
-	print_pair(p);
-//	sum = sum_snailfish_num(p, p2);
+	p2 = parse_snailfish_num(&str2);
+//	print_pair(p);
+	sum = sum_snailfish_num(p, p2);
 //	print_pair(sum);
+	explode(p);
+	print_pair(p);
+
+}
+
+
+void	explode(t_pair *p)
+{
+	int		i;
+	t_pair	**deepest;
+	t_pair	*aux;
+	t_pair	*aux2;
+
+	i = 0;
+	deepest = malloc(sizeof(t_pair *));
+	deepest[0] = 0;
+	i = deepest_pair(p, 1, deepest);
+	printf("deepest pair %i\n", i);
+//	print_pair((*deepest));
+	if (i >= 4)
+	{
+		aux = (*deepest);
+		aux2 = aux->parent;
+		while (aux && aux2 && aux2->left->p && aux2->left->p == aux)
+		{
+			aux = aux->parent;
+			aux2 = aux2->parent;
+		}
+		if (aux == (*deepest))
+			aux->parent->left->num += (*deepest)->left->num;
+		else if (aux2)
+		{
+			aux = aux2->left->p;
+			while (aux && aux->right->type == 1)
+				aux = aux->right->p;
+			if (aux)
+				aux->right->num += (*deepest)->left->num;
+		}
+		aux = (*deepest);
+		aux2 = aux->parent;
+		while (aux && aux2 && aux2->right->p == aux)
+		{
+			aux = aux->parent;
+			aux2 = aux2->parent;
+			printf("h");
+		}
+		if (aux == (*deepest))
+			aux->parent->right->num += (*deepest)->right->num;
+		else if (aux && aux2)
+		{
+			if (aux2->right->type == 1)
+			{
+				aux = aux2->right->p;
+				while (aux && aux->left->type == 1)
+					aux = aux->left->p;
+				if (aux)
+					aux->left->num += (*deepest)->right->num;
+			}
+			else if (aux2->right->type == 0)
+			{
+				aux2->right->num += (*deepest)->right->num;
+			}
+		}
+		aux = (*deepest)->parent;
+		if (aux->left->p == (*deepest))
+		{
+			aux->left->type = 0;
+			aux->left->num = 0;
+		}
+		else if (aux->right->p == (*deepest))
+		{
+			aux->right->type = 0;
+			aux->right->num = 0;
+		}
+	}
+}
+
+int	deepest_pair(t_pair *p, int i, t_pair **deepest)
+{
+	int	type_zero;
+
+	type_zero = 0;
+	if (p && p->left && p->left->type == 0)
+		type_zero++;
+//		printf("left: %i, ", p->left->num);
+	else if (p && p->left)
+		return deepest_pair(p->left->p, i + 1, deepest);
+	if (p && p->right && p->right->type == 0)
+		type_zero++;
+//		printf("right: %i ", p->right->num);
+	else if (p && p->right)
+		return deepest_pair(p->right->p, i + 1, deepest);
+	if (type_zero == 2)
+	{
+		*deepest = p;
+		return (i);
+	}
+	return (-1);
+//	printf("\n");
 }
 
 t_pair	*sum_snailfish_num(t_pair *p1, t_pair *p2)
