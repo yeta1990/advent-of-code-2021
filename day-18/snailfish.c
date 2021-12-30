@@ -24,7 +24,7 @@ void	print_pair(t_pair *p);
 t_pair	*sum_snailfish_num(t_pair *p1, t_pair *p2);
 void	deepest_pair(t_pair *p, int i, int *deep, t_pair **deepest);
 void	explode(t_pair *p);
-
+void	split(t_pair *p, t_pair *head);
 int	main(void)
 {
 	t_pair	*p;
@@ -51,15 +51,62 @@ int	main(void)
 	p2 = parse_snailfish_num(&str2);
 //	print_pair(p);
 	sum = sum_snailfish_num(p, p2);
-//	print_pair(sum);
+	printf("sum->");
+	print_pair(sum);
+	printf("\n");
 	explode(sum);
+	split(sum, sum);
 	print_pair(sum);
 
-	explode(sum);
-	print_pair(sum);
+//	explode(sum);
+//	print_pair(sum);
 
 }
 
+void	split(t_pair *p, t_pair *head)
+{
+	int	type_zero;
+
+	type_zero = 0;
+	if (p && p->left && p->left->type == 0)
+	{
+		if (p->left->num > 9)
+		{
+			p->left->type = 1;
+			p->left->p = new_pair();
+			p->left->p->left->type = 0;
+			p->left->p->right->type = 0;
+			p->left->p->left->num = p->left->num / 2;
+			p->left->p->right->num = p->left->num - p->left->p->left->num;
+			p->left->p->parent = p;
+			printf("reduce-> ");
+			print_pair(head);
+			printf("\n");
+			explode(head);
+		}
+	}
+	else if (p && p->left)
+		split(p->left->p, head);
+	if (p && p->right && p->right->type == 0)
+	{
+		if (p->right->num > 9)
+		{
+			p->right->type = 1;
+			p->right->p = new_pair();
+			p->right->p->left->type = 0;
+			p->right->p->right->type = 0;
+			p->right->p->left->num = p->right->num / 2;
+			p->right->p->right->num = p->right->num - p->right->p->left->num;
+			p->right->p->parent = p;
+			printf("reduce-> ");
+			print_pair(head);
+			printf("\n");
+			explode(head);
+		}
+	}
+	else if (p && p->right)
+		split(p->right->p, head);
+}
 
 void	explode(t_pair *p)
 {
@@ -74,10 +121,7 @@ void	explode(t_pair *p)
 	deepest = malloc(sizeof(t_pair *));
 	deepest[0] = 0;
 	deepest_pair(p, 1, &deep, deepest);
-	printf("deepest pair %i\n", deep);
-	print_pair((*deepest));
-	printf("\n");
-	if (deep >= 4)
+	while (deep >= 5)
 	{
 		aux = (*deepest)->parent;
 		aux2 = (*deepest);
@@ -114,7 +158,7 @@ void	explode(t_pair *p)
 			{
 				aux = aux->right->p;
 				while (aux->left->type == 1)
-				aux = aux->left->p;
+					aux = aux->left->p;
 				aux->left->num += (*deepest)->right->num;
 			}
 		}
@@ -129,9 +173,17 @@ void	explode(t_pair *p)
 			aux->right->type = 0;
 			aux->right->num = 0;
 		}
+		printf("explode->");
+		print_pair(p);
+		*deepest = 0;
+		deep = 0;
+		deepest_pair(p, 1, &deep, deepest);
+	//	printf("deepest pair %i\n", deep);
+	//	print_pair(*deepest);
+		printf("\n");
 	}
 }
-
+	
 void	deepest_pair(t_pair *p, int i, int *deep, t_pair **deepest)
 {
 	int	type_zero;
