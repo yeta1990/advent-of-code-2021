@@ -211,8 +211,10 @@ t_pair	*sum_snailfish_num(t_pair *p1, t_pair *p2)
 	new = new_pair();
 	new->left->type = 1;
 	new->left->p = p1;
+	new->left->p->parent = new;
 	new->right->type = 1;
 	new->right->p = p2;
+	new->right->p->parent = new;
 	return (new);
 }
 
