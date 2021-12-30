@@ -44,8 +44,8 @@ int	main(void)
 //	char	*str = "[[[[[9,8],1],2],3],4]";
 //	char	*str = "[7,[6,[5,[4,[3,2]]]]]";
 //	char	*str = "[[6,[5,[4,[3,2]]]],1]";
-//	char	*str = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]";
-	char	*str = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]";
+	char	*str = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]";
+//	char	*str = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]";
 	char	*str2 = "[1,1]";
 	p = parse_snailfish_num(&str);
 	p2 = parse_snailfish_num(&str2);
@@ -73,46 +73,43 @@ void	explode(t_pair *p)
 //	print_pair((*deepest));
 	if (i >= 4)
 	{
-		aux = (*deepest);
-		aux2 = aux->parent;
-		while (aux && aux2 && aux2->left->p && aux2->left->p == aux)
+		aux = (*deepest)->parent;
+		aux2 = (*deepest);
+		while (aux->left->p == aux2 && aux->parent)
 		{
 			aux = aux->parent;
 			aux2 = aux2->parent;
 		}
-		if (aux == (*deepest))
-			aux->parent->left->num += (*deepest)->left->num;
-		else if (aux2)
+		if (aux->left->p != aux2)
 		{
-			aux = aux2->left->p;
-			while (aux && aux->right->type == 1)
-				aux = aux->right->p;
-			if (aux)
+			if (aux->left->type == 0)
+				aux->left->num += (*deepest)->left->num;
+			else
+			{
+				aux = aux->left->p;
+				while (aux->right->type == 1)
+					aux = aux->right->p;
 				aux->right->num += (*deepest)->left->num;
+			}
 		}
-		aux = (*deepest);
-		aux2 = aux->parent;
-		while (aux && aux2 && aux2->right->p == aux)
+
+		aux = (*deepest)->parent;
+		aux2 = (*deepest);
+		while (aux->right->p == aux2 && aux->parent)
 		{
 			aux = aux->parent;
 			aux2 = aux2->parent;
-			printf("h");
 		}
-		if (aux == (*deepest))
-			aux->parent->right->num += (*deepest)->right->num;
-		else if (aux && aux2)
+		if (aux->right->p != aux2)
 		{
-			if (aux2->right->type == 1)
+			if (aux->right->type == 0)
+				aux->right->num += (*deepest)->right->num;
+			else
 			{
-				aux = aux2->right->p;
-				while (aux && aux->left->type == 1)
-					aux = aux->left->p;
-				if (aux)
-					aux->left->num += (*deepest)->right->num;
-			}
-			else if (aux2->right->type == 0)
-			{
-				aux2->right->num += (*deepest)->right->num;
+				aux = aux->right->p;
+				while (aux->left->type == 1)
+				aux = aux->left->p;
+				aux->left->num += (*deepest)->right->num;
 			}
 		}
 		aux = (*deepest)->parent;
