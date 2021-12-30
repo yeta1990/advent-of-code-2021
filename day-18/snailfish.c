@@ -30,37 +30,28 @@ int	main(void)
 	t_pair	*p;
 	t_pair	*p2;
 	t_pair	*sum;
+	char	*str1;
+	char	*str2;
+	FILE	*f;
 
-//	char	*str = "[1,2]";
-//	char	*str = "[[1,2],3]";
-//	char	*str = "[2,[8,8]]";
-//	char	*str = "[8,[7,[1,0]]]";
-//	char	*str = "[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]";
-//	char	*str = "[[[1,3],[5,3]],1]";
-//	char	*str = "[[1,3],[5,3]]";
-//	char	*str = "[7,[8,[7,[1,0]]]]";
-//	char	*str = "[[8,[7,[1,0]]],7]";
-	char	*str = "[[[[4,3],4],4],[7,[[8,4],9]]]";
-//	char	*str = "[[[[[9,8],1],2],3],4]";
-//	char	*str = "[7,[6,[5,[4,[3,2]]]]]";
-//	char	*str = "[[6,[5,[4,[3,2]]]],1]";
-//	char	*str = "[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]";
-//	char	*str = "[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]";
-	char	*str2 = "[1,1]";
-	p = parse_snailfish_num(&str);
-	p2 = parse_snailfish_num(&str2);
-//	print_pair(p);
-	sum = sum_snailfish_num(p, p2);
-	printf("sum->");
+	str1 = malloc(sizeof(char) * 300);
+	str2 = malloc(sizeof(char) * 300);
+	
+	f = fopen("ex2", "r");
+	fscanf(f, "%300[^\n]\n", str1);
+	p = parse_snailfish_num(&str1);
+	while(fscanf(f, "%300[^\n]\n", str2) != -1)
+	{
+		p2 = parse_snailfish_num(&str2);
+		sum = sum_snailfish_num(p, p2);
+		explode(sum);
+		split(sum, sum);
+	//	printf("\n\n");
+		p = sum;
+	}
 	print_pair(sum);
 	printf("\n");
-	explode(sum);
-	split(sum, sum);
-	print_pair(sum);
-
-//	explode(sum);
-//	print_pair(sum);
-
+	fclose(f);
 }
 
 void	split(t_pair *p, t_pair *head)
@@ -79,10 +70,11 @@ void	split(t_pair *p, t_pair *head)
 			p->left->p->left->num = p->left->num / 2;
 			p->left->p->right->num = p->left->num - p->left->p->left->num;
 			p->left->p->parent = p;
-			printf("reduce-> ");
-			print_pair(head);
-			printf("\n");
+		//	printf("reduce-> ");
+		//	print_pair(head);
+		//	printf("\n");
 			explode(head);
+			split(head, head);
 		}
 	}
 	else if (p && p->left)
@@ -98,10 +90,11 @@ void	split(t_pair *p, t_pair *head)
 			p->right->p->left->num = p->right->num / 2;
 			p->right->p->right->num = p->right->num - p->right->p->left->num;
 			p->right->p->parent = p;
-			printf("reduce-> ");
-			print_pair(head);
-			printf("\n");
+		//	printf("reduce-> ");
+		//	print_pair(head);
+		//	printf("\n");
 			explode(head);
+			split(head, head);
 		}
 	}
 	else if (p && p->right)
@@ -173,14 +166,14 @@ void	explode(t_pair *p)
 			aux->right->type = 0;
 			aux->right->num = 0;
 		}
-		printf("explode->");
-		print_pair(p);
+	//	printf("explode->");
+	//	print_pair(p);
 		*deepest = 0;
 		deep = 0;
 		deepest_pair(p, 1, &deep, deepest);
 	//	printf("deepest pair %i\n", deep);
 	//	print_pair(*deepest);
-		printf("\n");
+	//	printf("\n");
 	}
 }
 	
