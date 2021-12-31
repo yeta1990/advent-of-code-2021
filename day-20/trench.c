@@ -27,7 +27,6 @@ int	main(void)
 		printf("%s\n", map[i]);
 		i++;
 	}
-
 	map2 = apply_enhance(map, algo);
 	apply_enhance(map2, algo);
 }
@@ -102,5 +101,3 @@ char	**apply_enhance(char **map, char algo[512])
 	printf("\n");
 	return (map2);
 }
-
-
